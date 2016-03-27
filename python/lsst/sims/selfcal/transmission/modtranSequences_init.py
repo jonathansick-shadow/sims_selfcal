@@ -4,6 +4,7 @@
 
 import numpy
 
+
 class AtmosphereSequences():
     """
     This class is used to generate sequences of atmospheric parameters, matching long-term weather trends,
@@ -11,7 +12,7 @@ class AtmosphereSequences():
     basic inputs for MODTRAN, so can be used to generate an atmospheric transmission curve. The class generates
     these parameters for a series of opsim pointings.
     """
-    
+
     def __init__(self):
         """Instantiate an AtmosphereSequences object."""
         self.modtran_visits = []
@@ -25,7 +26,6 @@ class AtmosphereSequences():
             self.modtran_visits[i][key] = value
         """
         return
-
 
     def generate_parameters(self, opsim_visits):
         """Generate the atmospheric parameters over time.
@@ -42,11 +42,12 @@ class AtmosphereSequences():
         # Eventually, there should be a LIST of DICTIONARIES which holds all the atmospheric parameters which
         # need to be input into modtran.
         # Each dictionary holds the 12 parameters ('O3', 'H2O', 'ihaze', ...) and then there will be a list of these
-        # dictionaries to hold the series of information over time. 
+        # dictionaries to hold the series of information over time.
         #  In the end we will write these parameters into a database. Here, all we have to do is
         # generate the parameters. Please add other methods as needed .... (is there is one per atmosphere component?)
-        # MUST make sure not to shuffle the obshistid / expmjd list - return list of MODTRAN parameters in the same order.
-        
+        # MUST make sure not to shuffle the obshistid / expmjd list - return list
+        # of MODTRAN parameters in the same order.
+
         return self.modtran_visits
 
 

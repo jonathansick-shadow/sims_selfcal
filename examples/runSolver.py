@@ -6,11 +6,9 @@ from lsst.sims.selfcal.analysis.healplots import healbin
 import healpy as hp
 
 
-
 def robustRMS(val):
-    iqr = np.percentile(val,75)-np.percentile(val,25)
+    iqr = np.percentile(val, 75)-np.percentile(val, 25)
     return iqr/1.349
-
 
 
 mySolver = lsqrSolver(infile='observations.dat', patchOut='solvedPatch.npz', starOut='solvedStar.npz')
@@ -21,9 +19,9 @@ mySolver.run()
 # now to compare the results!
 
 starsFit = np.load('solvedStar.npz')['result']
-trueStars = fastRead('starInfo.dat', dtype=zip(['starID','TrueMag', 'ra','dec'],
-                                               [int,float,float,float]),
-                                               delimiter=',')
+trueStars = fastRead('starInfo.dat', dtype=zip(['starID', 'TrueMag', 'ra', 'dec'],
+                                               [int, float, float, float]),
+                     delimiter=',')
 trueStars.sort(order='starID')
 
 # Remove any stars that were observed but not fit
@@ -39,7 +37,7 @@ print 'std (fitMag - TrueMag) = %f'%np.std(resid)
 print 'robust RMS = %f'%robustRMS(resid)
 rrms = robustRMS(resid)
 
-plt.hist(resid, bins=100, range=(-4*rrms,4*rrms))
+plt.hist(resid, bins=100, range=(-4*rrms, 4*rrms))
 plt.xlabel('Fit-True (mags)')
 plt.ylabel('#')
 

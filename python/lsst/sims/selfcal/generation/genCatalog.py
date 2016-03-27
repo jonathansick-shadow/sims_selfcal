@@ -11,11 +11,13 @@ def wrapRA(ra):
     ra = ra % 360.0
     return ra
 
+
 def capDec(dec):
     """Terminates declination at +/- 90 degrees."""
-    dec = np.where(dec>90, 90, dec)
-    dec = np.where(dec<-90, -90, dec)
+    dec = np.where(dec > 90, 90, dec)
+    dec = np.where(dec < -90, -90, dec)
     return dec
+
 
 def treexyz(ra, dec):
     """Calculate x/y/z values for ra/dec points, ra/dec in radians."""
@@ -24,6 +26,7 @@ def treexyz(ra, dec):
     y = np.cos(dec) * np.sin(ra)
     z = np.sin(dec)
     return x, y, z
+
 
 def buildTree(simDataRa, simDataDec,
               leafsize=100):
@@ -34,7 +37,7 @@ def buildTree(simDataRa, simDataDec,
     if np.any(np.abs(simDataRa) > np.pi*2.0) or np.any(np.abs(simDataDec) > np.pi*2.0):
         raise ValueError('Expecting RA and Dec values to be in radians.')
     x, y, z = treexyz(simDataRa, simDataDec)
-    data = zip(x,y,z)
+    data = zip(x, y, z)
     if np.size(data) > 0:
         starTree = kdtree(data, leafsize=leafsize)
     else:
@@ -74,14 +77,14 @@ def genCatalog(visits, starsDbAddress, offsets=None, lsstFilter='r', raBlockSize
     print >>tfile, '#StarID, TrueMag, ra, dec'
 
     # Set up connection to stars db:
-    msrgbDB = db.Database(starsDbAddress, dbTables={'stars':['stars', 'id']})
+    msrgbDB = db.Database(starsDbAddress, dbTables={'stars': ['stars', 'id']})
     starCols = ['id', 'rmag', 'gmag', 'ra', 'decl']
     if lsstFilter+'mag' not in starCols:
-        starCols.append(lsstFilter+'mag' )
+        starCols.append(lsstFilter+'mag')
 
     # Loop over the sky
-    raBlocks = np.arange(0.,2.*np.pi, np.radians(raBlockSize))
-    decBlocks = np.arange(-np.pi, np.pi, np.radians(decBlockSize) )
+    raBlocks = np.arange(0., 2.*np.pi, np.radians(raBlockSize))
+    decBlocks = np.arange(-np.pi, np.pi, np.radians(decBlockSize))
 
     # List to keep track of which starIDs have been written to truth file
     idsUsed = []
@@ -100,11 +103,11 @@ def genCatalog(visits, starsDbAddress, offsets=None, lsstFilter='r', raBlockSize
             # The idea here is that this could be run in parallel or not and is still repeatable
             # b/c the seed will always be the same for each block.
             np.random.seed(seed)
-            seed += 1 #This should make it possible to run in parallel and maintain repeatability.
-            visitsIn = visits[np.where( (visits['ra'] >=
-                      raBlock) & (visits['ra'] < raBlock+np.radians(raBlockSize)) &
-                      (visits['dec'] >=  decBlock) &
-                      (visits['dec'] < decBlock+np.radians(decBlockSize)) )]
+            seed += 1  # This should make it possible to run in parallel and maintain repeatability.
+            visitsIn = visits[np.where((visits['ra'] >=
+                                        raBlock) & (visits['ra'] < raBlock+np.radians(raBlockSize)) &
+                                       (visits['dec'] >= decBlock) &
+                                       (visits['dec'] < decBlock+np.radians(decBlockSize)))]
             if np.size(visitsIn) > 0:
                 # Fetch the stars in this block+the radiusFoV
                 decPad = radiusFoV
@@ -124,10 +127,10 @@ def genCatalog(visits, starsDbAddress, offsets=None, lsstFilter='r', raBlockSize
                     raMax = wrapRA(raMax)
                     # no wrap
                     if raMin < raMax:
-                        sqlwhere += 'and ra < %f and ra > %f '%(raMax,raMin)
+                        sqlwhere += 'and ra < %f and ra > %f '%(raMax, raMin)
                     # One side wrapped
                     else:
-                        sqlwhere += 'and (ra > %f or ra < %f)'%(raMin,raMax)
+                        sqlwhere += 'and (ra > %f or ra < %f)'%(raMin, raMax)
                 print 'quering stars with: '+sqlwhere
                 stars = msrgbDB.tables['stars'].query_columns_Array(
                     colnames=starCols, constraint=sqlwhere)
@@ -136,15 +139,15 @@ def genCatalog(visits, starsDbAddress, offsets=None, lsstFilter='r', raBlockSize
                 # one numpy stack per block rather than lots of stacks per visit
                 # Ugh, feels like writing fortran though...
                 newcols = ['x', 'y', 'radius', 'patchID', 'subPatch', 'hpID', 'hp1', 'hp2', 'hp3', 'hp4']
-                newtypes = [float, float, float, int,int, int]
-                stars = rfn.merge_arrays([stars, np.zeros(stars.size, dtype=zip(newcols,newtypes))],
+                newtypes = [float, float, float, int, int, int]
+                stars = rfn.merge_arrays([stars, np.zeros(stars.size, dtype=zip(newcols, newtypes))],
                                          flatten=True, usemask=False)
                 # Build a KDTree for the stars
-                starTree = buildTree(np.radians(stars['ra']),np.radians(stars['decl']) )
+                starTree = buildTree(np.radians(stars['ra']), np.radians(stars['decl']))
                 newIDs = np.in1d(stars['id'], idsUsed, invert=True, assume_unique=True)
                 newIDs = np.arange(stars['id'].size)[newIDs]
-                for newID in  newIDs:
-                    print >>tfile, '%i, %f, %f, %f'%(stars['id'][newID],stars['%smag'%lsstFilter][newID],
+                for newID in newIDs:
+                    print >>tfile, '%i, %f, %f, %f'%(stars['id'][newID], stars['%smag'%lsstFilter][newID],
                                                      stars['ra'][newID], stars['decl'][newID])
 
                 idsUsed.extend(stars['id'][newIDs].tolist())
@@ -153,14 +156,14 @@ def genCatalog(visits, starsDbAddress, offsets=None, lsstFilter='r', raBlockSize
                 dmags = {}
                 # Calc x,y, radius for each star, crop off stars outside the FoV
                 # XXX - plan to replace with code to see where each star falls and get chipID.
-                vx,vy,vz = treexyz(visit['ra'], visit['dec'] )
-                indices = starTree.query_ball_point( (vx,vy,vz), treeRadius )
+                vx, vy, vz = treexyz(visit['ra'], visit['dec'])
+                indices = starTree.query_ball_point((vx, vy, vz), treeRadius)
                 starsIn = stars[indices]
                 starsIn = starsProject(starsIn, visit)
 
                 # Assign patchIDs and healpix IDs
                 starsIn = assignPatches(starsIn, visit, nPatches=nPatches)
-                #maybe make dmags a dict on stars, so that it's faster to append them all?
+                # maybe make dmags a dict on stars, so that it's faster to append them all?
 
                 # Apply the offsets that have been configured
                 for offset in offsets:
@@ -178,10 +181,10 @@ def genCatalog(visits, starsDbAddress, offsets=None, lsstFilter='r', raBlockSize
                           + uncertFloor**2)**0.5
 
                 # patchID, starID, observed Mag, mag uncertainty, radius, healpixIDs
-                for star,obsmag,magE in zip(starsIn,obsMag,magErr):
-                    print >>ofile, "%i, %i, %f, %f, %f, %i "%( \
-                        star['patchID'],star['id'], obsmag, magE,
-                        star['radius'], 0) #star['hpID'])
+                for star, obsmag, magE in zip(starsIn, obsMag, magErr):
+                    print >>ofile, "%i, %i, %f, %f, %f, %i "%(
+                        star['patchID'], star['id'], obsmag, magE,
+                        star['radius'], 0)  # star['hpID'])
 
                 # Note the new starID's and print those to a truth file
                 # starID true mag
@@ -194,7 +197,6 @@ def genCatalog(visits, starsDbAddress, offsets=None, lsstFilter='r', raBlockSize
 
                 # Look at the distribution of dmags
                 # patchID, starID, dmag1, dmag2, dmag3...
-
 
     ofile.close()
     tfile.close()

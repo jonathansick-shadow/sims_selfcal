@@ -37,6 +37,7 @@ import numpy
 
 class ModtranCards(object):
     """A class to set up the MODTRAN4 or 5 .tp5 input files, and run MODTRAN. """
+
     def __init__(self):
         """Instantiate the modtranCard object."""
         self._cardTemplate = None
@@ -197,10 +198,12 @@ class ModtranCards(object):
         # Add some more modtran values to be written into cards.
         # Define optional card2A and/or Card2B to be inserted after card2
         #  In case clouds are expected: Default values for Cirrus 18 or 19
-        card2A = ['   0.000   0.000   0.000      ' + '                              ' + '                    \n']
+        card2A = ['   0.000   0.000   0.000      ' +
+                  '                              ' + '                    \n']
         #  In case aerosols are non standard: aerosol fog near surface,
         #  decreasing with height
-        card2B = ['    -1.000     2.000     1.000 ' + '                              ' + '                   \n']
+        card2B = ['    -1.000     2.000     1.000 ' +
+                  '                              ' + '                   \n']
         # Modtran has a 'continuation' card that indicates if there are more
         # atmospheres remaining to be run in the input file, so let's set those
         # values.
@@ -249,7 +252,7 @@ class ModtranCards(object):
             # Add new card into entire list.
             irun += 1
             allcards.append(card)
-            #self._printCards(allcards)
+            # self._printCards(allcards)
         # Write data to output.
         outfile = os.path.join(modtranDataDir, outfileRoot)
         with open(outfile + '.tp5', 'w') as cardf:

@@ -16,7 +16,9 @@ from math import *
 import numpy
 from statsmodels.tsa.arima_process import arma_acf
 
+
 class ArmaSf():
+
     def __init__(self):
         return
 
@@ -42,7 +44,7 @@ class ArmaSf():
         with the same values of lambda_p, lambda_s, lambda_avg
         x_max is the maximum size to calculate the SF over, and only relevant for calculating the 
         acf when acfFileName (where the ARMA ACF is calculated by R) is used. (1000 ~ 6 degrees)
-        """    
+        """
         self.lambda_p = float(lambda_p)
         self.lambda_avg = float(lambda_avg)
         self.lambda_s = float(lambda_s)
@@ -53,13 +55,12 @@ class ArmaSf():
             self.acf = self._ACF_ARMA(x_max)
         # Calculate cloud variance in ARMA model
         self.var = self._CloudVar()
-        # Scale ACF for desired cloud variance. 
-        SFtheta = self.acf[:,0]
+        # Scale ACF for desired cloud variance.
+        SFtheta = self.acf[:, 0]
         var = (c*kappa)**2 * self.var
-        SFsf = var * (1 - self.acf[:,1])
+        SFsf = var * (1 - self.acf[:, 1])
         SFsf = numpy.sqrt(SFsf)
         return SFtheta, SFsf
-
 
     def _ACF_ARMA(self, x_max):
         """Calculate the ACF using an ARMA function (from statsmodels)."""
@@ -68,28 +69,28 @@ class ArmaSf():
         lag_max = ceil(x_max / self.lambda_s)
         a1 = exp(-self.lambda_s / self.lambda_p)
         # Use the statsmodels ARMA function
-        armaAcf = arma_acf([1,-a1], ma_coeff, nobs=lag_max)
+        armaAcf = arma_acf([1, -a1], ma_coeff, nobs=lag_max)
         x = numpy.arange(0, x_max, self.lambda_s)
         # Set self.acf - a 2-d array of theta/ACF
         acf = numpy.empty((len(x), 2))
         # convert distance x (meters) in the acf to angular scale in degrees - clouds assumed
         # at 10 km (thus dividing by 10,000)
-        acf[:,0] = x / (10000.0*numpy.pi/180.0)
-        acf[:,1] = armaAcf
+        acf[:, 0] = x / (10000.0*numpy.pi/180.0)
+        acf[:, 1] = armaAcf
         return acf
 
     def _CloudVar(self):
         """
         Map a CAR(1) process to an AR(1), then average over lambda_avg
         and calculate variance
-        
+
         lambda_p - physical length scale of AR process
         lambda_s - physical sampling interval of AR process
         lambda_avg - physical length over which AR process is to be integrated
-        """    
+        """
         # q is MA order of ARMA(1,q)
         q = int(round(self.lambda_avg/self.lambda_s))
-        a = exp(-self.lambda_s / self.lambda_p)    
+        a = exp(-self.lambda_s / self.lambda_p)
         (var, var_ratio) = self._ARMAvar(q, a)
         # This variance is a multiple of the variance of the noise driving the
         # AR(1) model.   This variance, in turn, is a multiple of the underlying
@@ -104,8 +105,8 @@ class ArmaSf():
         all = 1/(q+1)
         Based on Brockwell & Davis 96 eqn 3.2.3
         Modified to have theta_0 = 1/(q+1) instead of = 1
-        """    
-        if q>0:
+        """
+        if q > 0:
             theta = 1./(q+1.)
             psi_jm1 = 1./(q+1.)
             var = psi_jm1**2
@@ -121,5 +122,5 @@ class ArmaSf():
         var_ratio = var*(1.-a**2)
         return (var, var_ratio)
 
-    
-    
+
+

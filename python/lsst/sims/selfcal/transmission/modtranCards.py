@@ -32,8 +32,10 @@ import shlex
 from copy import deepcopy
 import numpy
 
+
 class ModtranCards:
     """A class to set up the MODTRAN4 or 5 .tp5 input files, and run MODTRAN. """
+
     def __init__(self):
         """Instantiate the modtranCard object."""
         self._cardTemplate = None
@@ -108,17 +110,19 @@ class ModtranCards:
         for line in file:
             paramValuesDict = {}
             # The current format version of Michel's parameter file is values separated by $, with additional spaces
-            #  on either side of entries like 'ID85144469 $ expMJD = 49353.165757 $ fieldRA = 0.793502 $ fi ..'
+            # on either side of entries like 'ID85144469 $ expMJD = 49353.165757 $
+            # fieldRA = 0.793502 $ fi ..'
             tmpvalues = line.split('$')
             # The first item is the observation ID name
             paramValuesDict['id'] = tmpvalues[0].strip()
             # The other values are keyword-value pairs.
             for i in range(1, len(tmpvalues)):
-                # Avoid entries which aren't actually key-value pairs (like the newline at the end of the line)
+                # Avoid entries which aren't actually key-value pairs (like the newline at
+                # the end of the line)
                 if (len(tmpvalues[i]) < 3):
                     continue
                 values = tmpvalues[i].split('=')
-                parname = values[0].strip()  #strip off spaces
+                parname = values[0].strip()  # strip off spaces
                 parvalue = values[1].strip()
                 paramValuesDict[parname] = parvalue
             # Then add this dictionary to the list.
@@ -140,7 +144,7 @@ class ModtranCards:
                 keys = line.split()
                 continue
             if keys == None:
-                raise Exception('Could not get dictionary keys from file header line (%s)' %(line))
+                raise Exception('Could not get dictionary keys from file header line (%s)' % (line))
             paramValuesDict = {}
             values = line.split()
             for k, i in zip(keys, len(keys)):
@@ -175,19 +179,22 @@ class ModtranCards:
         # If paramValues was a single dictionary, let's just turn it into a list so we can iterate
         #  over as if it was given as a list. Cheap, but easy.
         if isinstance(paramValues, dict):
-            paramValues = [paramValues,]
+            paramValues = [paramValues, ]
         # Add some more modtran values to be written into cards.
         # Define optional card2A and/or Card2B to be inserted after card2
         #   In case clouds are expected: Default values for Cirrus 18 or 19
-        card2A =  ['   0.000   0.000   0.000      ' + '                              ' + '                    \n']
+        card2A = ['   0.000   0.000   0.000      ' +
+                  '                              ' + '                    \n']
         #   In case aerosols are non standard: aerosol fog near surface, decreasing with height
-        card2B = ['    -1.000     2.000     1.000 ' + '                              ' + '                   \n']
+        card2B = ['    -1.000     2.000     1.000 ' +
+                  '                              ' + '                   \n']
         # Modtran has a 'continuation' card that indicates if there are more atmospheres remaining to be
         # run in the input file, so let's set those values.
         continuation_cardvalue = numpy.ones(len(paramValues), 'int')
         continuation_cardvalue[len(continuation_cardvalue)-1] = 0
         continuation_cardline = len(self._cardTemplate) - 1
-        # We want to write the location of the MODTRAN DATA files into the input file, so let's figure that out.
+        # We want to write the location of the MODTRAN DATA files into the input
+        # file, so let's figure that out.
         modtranDataDir = os.getenv('MODTRAN_DATADIR')
         # Go through each 'run', combining the input cards into one big file.
         irun = 0
@@ -202,19 +209,19 @@ class ModtranCards:
                 line = self._paramFormats[k]['outputLine']
                 # Insert into appropriate card.
                 card[line] = card[line][0:(self._paramFormats[k]['startChar']-1)] + \
-                    self._paramFormats[k]['format'] %(paramValuesDict[k]) + \
+                    self._paramFormats[k]['format'] % (paramValuesDict[k]) + \
                     card[line][(self._paramFormats[k]['endChar']):]
             # Change modtran Data Dir
             #   this line should be 2 if the band model is not being specified; 3 if it is.
             card[3] = modtranDataDir + '\n'
             # Add continuation card value.
-            card[continuation_cardline] = card[continuation_cardline][:4] + '%d' %(continuation_cardvalue[irun]) + \
+            card[continuation_cardline] = card[continuation_cardline][:4] + '%d' % (continuation_cardvalue[irun]) + \
                 card[continuation_cardline][5:]
             # Add Card2A and/or Card 2B if needed, inserting into the input file at line ('rank') 6
             # And add these lines into the modtran input file at line ('rank') 6
             line_add = 6
-            if paramValuesDict['IHAZE'] > 0 :
-                if paramValuesDict['ICLD'] > 0 :
+            if paramValuesDict['IHAZE'] > 0:
+                if paramValuesDict['ICLD'] > 0:
                     # Insert card 2A
                     card = card[:line_add] + card2A + card[line_add:]
                     line_add += 1
@@ -223,7 +230,7 @@ class ModtranCards:
             # Add new card into entire list.
             irun += 1
             allcards.append(card)
-            #self._printCards(allcards)
+            # self._printCards(allcards)
         # Write data to output.
         file = open(outfileRoot+'.tp5', 'w')
         for run in allcards:
@@ -244,7 +251,7 @@ class ModtranCards:
         # Run modtran.
         errcode = subprocess.check_call(args)
         if errcode != 0:
-            raise Exception('Modtran run on %s did not complete properly.' %(outfileRoot))
+            raise Exception('Modtran run on %s did not complete properly.' % (outfileRoot))
         return
 
     def cleanModtran(self, outfileRoot='tmp'):

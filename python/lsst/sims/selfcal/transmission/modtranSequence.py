@@ -54,6 +54,7 @@ class AtmosphereSequence(object):
     transmission curve.
     The class generates these parameters for a series of opsim pointings.
     """
+
     def __init__(self, opsim_filename=None, opsim_data=None):
         """Instantiate an AtmosphereSequences object.
         """

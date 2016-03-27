@@ -2,9 +2,9 @@ import os
 import re
 import lsst.sims.selfcal.analysis.color_correct as cc
 
-cwd=os.getcwd()
+cwd = os.getcwd()
 
-name = re.sub('/.*/','',cwd)
-tag='_'+name
+name = re.sub('/.*/', '', cwd)
+tag = '_'+name
 
-cc.flat_correct_pernight(name, nx=20,ny=20)
+cc.flat_correct_pernight(name, nx=20, ny=20)

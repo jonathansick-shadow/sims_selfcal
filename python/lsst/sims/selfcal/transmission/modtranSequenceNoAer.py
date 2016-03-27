@@ -72,6 +72,7 @@ class AtmosphereSequence(object):
     transmission curve.
     The class generates these parameters for a series of opsim pointings.
     """
+
     def __init__(self, opsim_filename=None, opsim_data=None):
         """Instantiate an AtmosphereSequence."""
         # OpSim pointing file, if existing
@@ -147,7 +148,7 @@ class AtmosphereSequence(object):
             else:
                 statement = '{0} non dictionary element(s) and {1} uncomplete\
                     dictionary(ies) in data list'.format(nodict, baddict)
-                return (False,  statement)
+                return (False, statement)
 
     def changeOpsimData(self, opsim_filename=None, opsim_data=None):
         """Input a new opsim data file or data list into the sequence."""

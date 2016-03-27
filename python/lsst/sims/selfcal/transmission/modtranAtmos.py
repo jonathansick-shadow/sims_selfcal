@@ -37,6 +37,7 @@ class Atmosphere(object):
     """Base class for retrieving a set of simulated MODTRAN
     atmosphere parameters between two dates in mjd.
     """
+
     def __init__(self, mjds, mjde, npoints, seed=_default_seed):
         """Initialize Atmosphere class"""
         # Starting/ending date
@@ -188,7 +189,7 @@ class Atmosphere(object):
     def init_main_parameters(self, nvulc=0):
         """Initialize the main atmospheric parameters"""
         # if not self._initialized_array:
-            # self._init_mjdArray()
+        # self._init_mjdArray()
         self._init_o3()
         self._init_h2o()
         self._init_aer()
@@ -234,7 +235,7 @@ class Atmosphere(object):
         tend = tstart + numpy.random.uniform(0, 50)
         for i in xrange(n):
             ivulc += numpy.where((self.mjd_arr >= tstart[i]) &
-                                (self.mjd_arr < tend[i]), 2, 0)
+                                 (self.mjd_arr < tend[i]), 2, 0)
         ivulc[numpy.where(ivulc > 2)] = 2
         self._ivulc_arr = ivulc
 

@@ -12,7 +12,7 @@
 # numpy arrays (keys for the dictionary are user-defined).
 #   (the readDatafile method could be better done using recarrays from numpy I think, but
 #    this is a to-do. )
-# 
+#
 # Requires numpy, MySQLdb, and pgdb (or psycopg2) modules for python.
 #
 # * sqlConnect(hostname='localhost', username='lsst', passwdname='lsst', dbname='opsimdev',
@@ -36,7 +36,7 @@
 
 # general python modules
 import numpy as n
-#import MySQLdb as mysql  #not in latest stack
+# import MySQLdb as mysql  #not in latest stack
 #import pgdb as pgsql
 #import psycopg2 as pgsql
 
@@ -49,25 +49,23 @@ deg2rad = n.pi/180.0
 rad2deg = 180.0/n.pi
 
 
-
-
 def readDatafile(infilename, keys, keytypes=None,
                  startcol=0, cols=None, sample=1, skiprows=0, delimiter=None):
     """Read values from infilename, in columns keys, and return dictionary of numpy arrays.
-    
+
     Limitation - while startcol can be >0, cannot skip columns beyond that point."""
     # open file
     import sys
     try:
         f = open(infilename, 'r')
     except IOError:
-        print >>sys.stderr, "Couldn't open file %s" %(infilename)
+        print >>sys.stderr, "Couldn't open file %s" % (infilename)
         print >>sys.stderr, "Returning None values"
         value = {}
         for i in keys:
             value[i] = None
         return value
-    print >>sys.stderr, "Reading file %s" %(infilename)
+    print >>sys.stderr, "Reading file %s" % (infilename)
     # Read data from file.
     value = {}
     for key in keys:
@@ -85,21 +83,21 @@ def readDatafile(infilename, keys, keytypes=None,
         if sampleskip == sample:
             linevalues = line.split()
             j = startcol
-            if len(linevalues)>=(len(keys)-j):
+            if len(linevalues) >= (len(keys)-j):
                 for key in keys:
                     try:
                         value[key].append(linevalues[j])
                     except IndexError:
                         print "readDataFile failed at line %d, column %d, key=%s" \
-                              %(i, j+1, key)
-                        print "Data values: %s" %(linevalues)
+                              % (i, j+1, key)
+                        print "Data values: %s" % (linevalues)
                         raise IndexError
                     j = j+1
             sampleskip = 0
     # End of loop over lines.
     # Convert to numpy arrays.
     for key in keys:
-        if keytypes!=None:
+        if keytypes != None:
             value[key] = n.array(value[key], dtype=keytypes[keys.index(key)])
         else:
             value[key] = n.array(value[key], dtype='float')
@@ -114,19 +112,19 @@ def writeDatafile(outfilename, data, keys, printheader=True, newfile=True):
         try:
             fout = open(outfilename, 'w')
         except IOError:
-            print >>sys.stderr, "Couldn't open file %s" %(outfilename)
+            print >>sys.stderr, "Couldn't open file %s" % (outfilename)
             return
     else:
         try:
             fout = open(outfilename, 'a')
         except IOError:
-            print >>sys.stderr, "Couldn't open file %s" %(outfilename)
+            print >>sys.stderr, "Couldn't open file %s" % (outfilename)
             return
     # Print header information if desired.
-    if printheader: 
+    if printheader:
         writestring = "# "
         for key in keys:
-            writestring = writestring + " " +  key
+            writestring = writestring + " " + key
         print >>fout, writestring
     # Print data information.
     datatype = {}
@@ -139,16 +137,17 @@ def writeDatafile(outfilename, data, keys, printheader=True, newfile=True):
             datatype[key] = 'str'
         else:
             datatype[key] = 'unknown'
-            print >>sys.stderr, "Couldn't determine data type of values with %s key; will skip in output" %(key)
+            print >>sys.stderr, "Couldn't determine data type of values with %s key; will skip in output" % (
+                key)
     for i in range(len(data[keys[0]])):
         writestring = ""
         for key in keys:
             if datatype[key] == 'str':
                 writestring = writestring + " " + data[key][i]
             elif datatype[key] == 'float':
-                writestring = writestring + " %f" %(data[key][i])
+                writestring = writestring + " %f" % (data[key][i])
             elif datatype[key] == 'int':
-                writestring = writestring + " %d" %(data[key][i])
+                writestring = writestring + " %d" % (data[key][i])
         # Done constructing write line.
         print >>fout, writestring
     # Done writing data.

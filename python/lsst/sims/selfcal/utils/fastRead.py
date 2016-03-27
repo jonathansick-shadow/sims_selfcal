@@ -1,8 +1,9 @@
 import numpy as np
 import re
 
+
 def fastRead(infilename, dtype,
-             delimiter=None, verbose=True, comments=['!','#','%']):
+             delimiter=None, verbose=True, comments=['!', '#', '%']):
     """
     Read values from infilename, and return numpy array.
     The numpy reading tools (genfromtxt, loadtxt) are incredibly slow.
@@ -15,7 +16,7 @@ def fastRead(infilename, dtype,
     # Open file.
     f = open(infilename, 'r')
     if verbose:
-        print "# Reading file %s" %(infilename)
+        print "# Reading file %s" % (infilename)
     # Read data from file.
     value = []
     for line in f:
@@ -27,5 +28,5 @@ def fastRead(infilename, dtype,
         value.append(tuple(linevalues))
     f.close()
     # Convert to numpy array.
-    value = np.array( value, dtype=dtype)
+    value = np.array(value, dtype=dtype)
     return value

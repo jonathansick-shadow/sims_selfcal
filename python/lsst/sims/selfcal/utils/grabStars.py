@@ -12,12 +12,11 @@ Nstars = 2e6
 decSize = 1.
 raSize = 1.
 
-decBlocks = np.arange(-90.,90.,decSize)
-raBlocks = np.arange(0.,360., raSize)
+decBlocks = np.arange(-90., 90., decSize)
+raBlocks = np.arange(0., 360., raSize)
 
-cols = ['ra','decl', 'id', 'fe/h', 'logg', 'umag','gmag','rmag',
-        'imag','zmag', 'ymag']
-
+cols = ['ra', 'decl', 'id', 'fe/h', 'logg', 'umag', 'gmag', 'rmag',
+        'imag', 'zmag', 'ymag']
 
 
 for ra in raBlocks:
@@ -25,7 +24,7 @@ for ra in raBlocks:
         solidAngle = (np.sin(np.radians(dec+decSize))-np.sin(np.radians(dec)))*(np.radians(raSize))
 
         starsInBlock = Nstars * solidAngle / (4.*np.pi)
-        
+
         sqlw = 'where (ra between %f and %f) and (decl between %f and %f)'%(ra, ra+raSize, dec, dec+decSize)
 
-        
+

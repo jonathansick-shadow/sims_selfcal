@@ -8,7 +8,7 @@
 #
 ####
 
-import numpy 
+import numpy
 import pylab
 from matplotlib.ticker import NullFormatter
 
@@ -16,6 +16,7 @@ import sys
 from optparse import OptionParser
 
 figformat = "png"
+
 
 def make_histogram(filename, columns, bin_numbers=None, file_lineskip=1, titles=None, xlabels=None, savefig=False):
     """Read data from 'filename' in columns 'columns' and create a histogram from the result.
@@ -35,30 +36,30 @@ def make_histogram(filename, columns, bin_numbers=None, file_lineskip=1, titles=
         if not (isinstance(c, int)):
             raise Exception('Error - columns should be list of ints.')
     if bin_numbers != None:
-        if ((len(bin_numbers) != len(columns)) & (len(bin_numbers)>1)):
+        if ((len(bin_numbers) != len(columns)) & (len(bin_numbers) > 1)):
             raise Exception('Error - bin_numbers should be same length as columns or length 1.')
     # Set up dictionary and lists to save data while being read.
     data = {}
     for c in columns:
         data[c] = []
     # Read the data.
-    # Open data file. 
-    f = open(filename, 'r')    
+    # Open data file.
+    f = open(filename, 'r')
     line_num = 0
     for line in f:
         line_num = line_num + 1
         # Skip comment lines.
         if (line.startswith("#") | line.startswith("!")):
             continue
-        # Skip the lines which are not multiples of file_lineskip (to enable subsampling file). 
+        # Skip the lines which are not multiples of file_lineskip (to enable subsampling file).
         #  i.e. if file_lineskip = 10, this will read only every tenth line.
         if ((line_num % file_lineskip) != 0):
             continue
         values = line.split()
-        # If there are not enough values in the line, quit reading (assume end of file). 
-        if len(values)<max(columns):
+        # If there are not enough values in the line, quit reading (assume end of file).
+        if len(values) < max(columns):
             break
-        # Assign data to dictionary. 
+        # Assign data to dictionary.
         for c in columns:
             data[c].append(values[c-1])
     # Close file.
@@ -70,7 +71,7 @@ def make_histogram(filename, columns, bin_numbers=None, file_lineskip=1, titles=
     # Set bin_numbers to default value, if not set by user.
     if bin_numbers == None:
         bin_numbers = [100]
-    if len(bin_numbers)==1:
+    if len(bin_numbers) == 1:
         for c in columns:
             bin_numbers.append(bin_numbers[0])
     # Create histograms - a new figure for each column.
@@ -82,20 +83,20 @@ def make_histogram(filename, columns, bin_numbers=None, file_lineskip=1, titles=
         pylab.figure()
         n[c], b[c], p[c] = pylab.hist(data[c], bins=bin_numbers[i])
         if titles == None:
-            pylab.title("%s Column %d" %(filename, c))
+            pylab.title("%s Column %d" % (filename, c))
         else:
             pylab.title(titles[i])
         if xlabels != None:
             pylab.xlabel(xlabels[i])
         if savefig:
-            figname = "hist_%d" %(c)
+            figname = "hist_%d" % (c)
             pylab.savefig(figname+"."+figformat, format=figformat)
         i = i + 1
     # Calculate some basic statistics for output.
     stats = {}
     statlist = ('data_min', 'data_max', 'data_ave', 'hist_min', 'hist_max', 'hist_ave')
     for c in columns:
-        stats[c] = {}        
+        stats[c] = {}
         stats[c]['data_min'] = data[c].min()
         stats[c]['data_max'] = data[c].max()
         stats[c]['data_ave'] = data[c].sum() / float(len(data[c]))
@@ -105,14 +106,15 @@ def make_histogram(filename, columns, bin_numbers=None, file_lineskip=1, titles=
     print ""
     writestring = "# column "
     for key in statlist:
-        writestring = writestring + " %s " %(key)
+        writestring = writestring + " %s " % (key)
     print writestring
     for c in columns:
-        writestring = "c %d " %(c)
+        writestring = "c %d " % (c)
         for key in statlist:
-            writestring = writestring + "%g " %(stats[c][key])
+            writestring = writestring + "%g " % (stats[c][key])
         print writestring
     return data, stats
+
 
 def make_2d_scatterhist(filename, columns, bin_numbers=None, file_lineskip=1, titles=None, xlabels=None, savefig=False):
     """Read data from 'filename' in columns 'columns' and create a histogram from the result.
@@ -134,30 +136,30 @@ def make_2d_scatterhist(filename, columns, bin_numbers=None, file_lineskip=1, ti
         if not (isinstance(c, int)):
             raise Exception('Error - columns should be list of ints.')
     if bin_numbers != None:
-        if ((len(bin_numbers) != len(columns)) & (len(bin_numbers)>1)):
+        if ((len(bin_numbers) != len(columns)) & (len(bin_numbers) > 1)):
             raise Exception('Error - bin_numbers should be same length as columns or length 1.')
     # Set up dictionary and lists to save data while being read.
     data = {}
     for c in columns:
         data[c] = []
     # Read the data.
-    # Open data file. 
-    f = open(filename, 'r')    
+    # Open data file.
+    f = open(filename, 'r')
     line_num = 0
     for line in f:
         line_num = line_num + 1
         # Skip comment lines.
         if (line.startswith("#") | line.startswith("!")):
             continue
-        # Skip the lines which are not multiples of file_lineskip (to enable subsampling file). 
+        # Skip the lines which are not multiples of file_lineskip (to enable subsampling file).
         #  i.e. if file_lineskip = 10, this will read only every tenth line.
         if ((line_num % file_lineskip) != 0):
             continue
         values = line.split()
-        # If there are not enough values in the line, quit reading (assume end of file). 
-        if len(values)<max(columns):
+        # If there are not enough values in the line, quit reading (assume end of file).
+        if len(values) < max(columns):
             break
-        # Assign data to dictionary. 
+        # Assign data to dictionary.
         for c in columns:
             data[c].append(values[c-1])
     # Close file.
@@ -169,11 +171,11 @@ def make_2d_scatterhist(filename, columns, bin_numbers=None, file_lineskip=1, ti
     # Set bin_numbers to default value, if not set by user.
     if bin_numbers == None:
         bin_numbers = [100]
-    if len(bin_numbers)==1:
+    if len(bin_numbers) == 1:
         for c in columns:
             bin_numbers.append(bin_numbers[0])
     # Create scatter plot / histograms. One figure only.
-    nullfmt   = NullFormatter()         # no labels    
+    nullfmt = NullFormatter()         # no labels
     # definitions for the axes - set any values.
     left, width = 0.1, 0.65
     bottom, height = 0.1, 0.65
@@ -182,7 +184,7 @@ def make_2d_scatterhist(filename, columns, bin_numbers=None, file_lineskip=1, ti
     rect_histx = [left, bottom_h, width, 0.2]
     rect_histy = [left_h, bottom, 0.2, height]
     # start with a rectangular Figure
-    pylab.figure(1, figsize=(8,8))
+    pylab.figure(1, figsize=(8, 8))
     axScatter = pylab.axes(rect_scatter)
     axHistx = pylab.axes(rect_histx)
     axHisty = pylab.axes(rect_histy)
@@ -191,30 +193,30 @@ def make_2d_scatterhist(filename, columns, bin_numbers=None, file_lineskip=1, ti
     axHisty.yaxis.set_major_formatter(nullfmt)
     # Create the scatter plot.
     axScatter.scatter(data[columns[0]], data[columns[1]])
-    # Now determine nice limits by hand.    
-    xymax = numpy.max( [numpy.max(data[columns[0]]), numpy.max(data[columns[1]])] )
-    xymin = numpy.min( [numpy.min(data[columns[0]]), numpy.min(data[columns[1]])] )
+    # Now determine nice limits by hand.
+    xymax = numpy.max([numpy.max(data[columns[0]]), numpy.max(data[columns[1]])])
+    xymin = numpy.min([numpy.min(data[columns[0]]), numpy.min(data[columns[1]])])
     binwidth = (xymax - xymin) / bin_numbers[0]
-    lim = ( int(xymax/binwidth)+0.5) * binwidth
-    axScatter.set_xlim( (-lim, lim) )
-    axScatter.set_ylim( (-lim, lim) )
+    lim = (int(xymax/binwidth)+0.5) * binwidth
+    axScatter.set_xlim((-lim, lim))
+    axScatter.set_ylim((-lim, lim))
     bins = numpy.arange(-lim, lim + binwidth, binwidth)
     n = {}
     n[columns[0]], b, p = axHistx.hist(data[columns[0]], bins=bins)
-    n[columns[1]], b, p = axHisty.hist(data[columns[1]], bins=bins, orientation='horizontal')    
-    axHistx.set_xlim( axScatter.get_xlim() )
-    axHisty.set_ylim( axScatter.get_ylim() )
+    n[columns[1]], b, p = axHisty.hist(data[columns[1]], bins=bins, orientation='horizontal')
+    axHistx.set_xlim(axScatter.get_xlim())
+    axHisty.set_ylim(axScatter.get_ylim())
     if xlabels != None:
         pylab.xlabel(xlabels[0])
         pylab.ylabel(xlabels[1])
     if savefig:
-        figname = "hist_%d" %(c)
+        figname = "hist_%d" % (c)
         pylab.savefig(figname+"."+figformat, format=figformat)
     # Calculate some basic statistics for output.
     stats = {}
     statlist = ('data_min', 'data_max', 'data_ave', 'hist_min', 'hist_max', 'hist_ave')
     for c in columns:
-        stats[c] = {}        
+        stats[c] = {}
         stats[c]['data_min'] = data[c].min()
         stats[c]['data_max'] = data[c].max()
         stats[c]['data_ave'] = data[c].sum() / float(len(data[c]))
@@ -224,19 +226,20 @@ def make_2d_scatterhist(filename, columns, bin_numbers=None, file_lineskip=1, ti
     print ""
     writestring = "# column "
     for key in statlist:
-        writestring = writestring + " %s " %(key)
+        writestring = writestring + " %s " % (key)
     print writestring
     for c in columns:
-        writestring = "c %d " %(c)
+        writestring = "c %d " % (c)
         for key in statlist:
-            writestring = writestring + "%g " %(stats[c][key])
+            writestring = writestring + "%g " % (stats[c][key])
         print writestring
     return data, stats
 
-#########copy above routine and but in 2d plot.
-                   
+# copy above routine and but in 2d plot.
+
+
 def make_histogram_predef(filename, columns, bin_ranges, bin_numbers, file_lineskip=1,
-                          titles=None, xlabels=None,  savefig=False):
+                          titles=None, xlabels=None, savefig=False):
     """Read data from 'filename' in columns 'columns' and create a histogram from the result.
 
     This method reads the data and immediately bins the data to produce a histogram, without saving
@@ -254,9 +257,9 @@ def make_histogram_predef(filename, columns, bin_ranges, bin_numbers, file_lines
     for c in columns:
         if not (isinstance(c, int)):
             raise Exception('Error - columns should be list of ints.')
-    if (bin_numbers ==None) | (bin_ranges == None):
+    if (bin_numbers == None) | (bin_ranges == None):
         raise Exception('Error - bin_ranges and bin_numbers have to be predefined.')
-    if ((len(bin_numbers) != len(columns)) & (len(bin_numbers)>1)):
+    if ((len(bin_numbers) != len(columns)) & (len(bin_numbers) > 1)):
         raise Exception('Error - bin_numbers should be same length as columns or length 1.')
     if len(bin_ranges) != len(columns):
         raise Exception('Error - bin_ranges should be same length as columns. (2 pairs per list item).')
@@ -282,29 +285,29 @@ def make_histogram_predef(filename, columns, bin_ranges, bin_numbers, file_lines
         stats[c] = {}
         stats[c]['data_min'] = 1e9
         stats[c]['data_max'] = -1e9
-        stats[c]['data_ave' ] = 0
+        stats[c]['data_ave'] = 0
     # Read the data.
-    # Open data file. 
-    f = open(filename, 'r')    
+    # Open data file.
+    f = open(filename, 'r')
     line_num = 0
     for line in f:
         line_num = line_num + 1
         # Skip comment lines.
         if (line.startswith("#") | line.startswith("!")):
             continue
-        # Skip the lines which are not multiples of file_lineskip (to enable subsampling file). 
+        # Skip the lines which are not multiples of file_lineskip (to enable subsampling file).
         #  i.e. if file_lineskip = 10, this will read only every tenth line.
         if (line_num % file_lineskip != 0):
             continue
-        values = line.split()        
-        # If there are not enough values in the line, quit reading (assume end of file). 
-        if len(values)<max(columns):
+        values = line.split()
+        # If there are not enough values in the line, quit reading (assume end of file).
+        if len(values) < max(columns):
             break
-        # Assign data to histogram bins.        
+        # Assign data to histogram bins.
         for c in columns:
             dataval = float(values[c-1])
             histidx = min(int((dataval - minval[c])/stepval[c]), nbinmax[c]-1)
-            histovals[c][histidx] = histovals[c][histidx] +  1
+            histovals[c][histidx] = histovals[c][histidx] + 1
             # And calculate the min/max/ave of the data.
             stats[c]['data_min'] = min(dataval, stats[c]['data_min'])
             stats[c]['data_max'] = max(dataval, stats[c]['data_max'])
@@ -322,26 +325,26 @@ def make_histogram_predef(filename, columns, bin_ranges, bin_numbers, file_lines
     print ""
     writestring = "# column "
     for key in statlist:
-        writestring = writestring + " %s " %(key)
+        writestring = writestring + " %s " % (key)
     print writestring
     for c in columns:
-        writestring = "c %d " %(c)
+        writestring = "c %d " % (c)
         for key in statlist:
-            writestring = writestring + "%g " %(stats[c][key])
-        print writestring            
+            writestring = writestring + "%g " % (stats[c][key])
+        print writestring
     # Make histogram plots.
     i = 0
     for c in columns:
         pylab.figure()
         pylab.bar(histobins[c], histovals[c], width=stepval[c], linewidth=0)
         if titles == None:
-            pylab.title("%s Column %d" %(filename, c))
+            pylab.title("%s Column %d" % (filename, c))
         else:
             pylab.title(titles[i])
         if xlabels != None:
             pylab.xlabel(xlabels[i])
         if savefig:
-            figname = "hist_%d" %(c)
+            figname = "hist_%d" % (c)
             pylab.savefig(figname+"."+figformat, format=figformat)
         i = i + 1
     return histobins, histovals
@@ -349,7 +352,7 @@ def make_histogram_predef(filename, columns, bin_ranges, bin_numbers, file_lines
 
 def parse_options(argv):
     usage = "usage: %prog [options] datafilename"
-    epilog ="Create histogram from a datafile, either by using pylab's built-in histogram function (which requires saving the data in memory but allows more dynamic setting of the histogram limits) or by assigning the data directly into histogram bins (which does not save the data in memory but requires predefining the histogram bins)."
+    epilog = "Create histogram from a datafile, either by using pylab's built-in histogram function (which requires saving the data in memory but allows more dynamic setting of the histogram limits) or by assigning the data directly into histogram bins (which does not save the data in memory but requires predefining the histogram bins)."
     parser = OptionParser(usage, epilog=epilog)
     parser.add_option("-l", "--linesample", action="store", type="int", dest="filelines",
                       help="subsample the data file by reading only multiples of linesample", default=1)
@@ -363,7 +366,7 @@ def parse_options(argv):
                       default=False)
     parser.add_option("-b", "--bins_hist", action="store", dest="num_histbins", type="string",
                       help="the number of bins to use in each histogram - (list) - enclose in ''", default=None)
-    parser.add_option("-r", "--range_hist", action="store",  dest="range_histbins", type="string",
+    parser.add_option("-r", "--range_hist", action="store", dest="range_histbins", type="string",
                       help="the ranges of the bins to use in each histogram - (list of pairs) - enclose in ''",
                       default=None)
     parser.add_option("-t", "--titles_hist", action="store", dest="hist_titles", type="string",
@@ -374,7 +377,7 @@ def parse_options(argv):
     parser.add_option("-2", "--2d_scatter/hist", action="store_true", dest="do2d",
                       help="Create a 2-d scatter plot and histogram", default=False)
     (options, argv) = parser.parse_args()
-    if len(argv)!=1:
+    if len(argv) != 1:
         parser.error("Incorrect number of arguments. Must supply filename.")
     filename = argv[0]
     return options, filename
@@ -398,64 +401,64 @@ if __name__ == "__main__":
 
     # Need some parsing here to accomodate input from command line.
     # The problem is the options only reads on big string from the command line -
-    # I have to separate it into individual list items here. 
+    # I have to separate it into individual list items here.
 
     # Convert columns to list for input to routines.
     columns = []
     tmp = ""
     for char in strcolumns:
-        if char == "[" :
+        if char == "[":
             continue
-        if ((char==" ") | (char==",") | (char=="]")):
-            if ((tmp!="") & (tmp!=" ") & (tmp!=",") & (tmp!="]")):
+        if ((char == " ") | (char == ",") | (char == "]")):
+            if ((tmp != "") & (tmp != " ") & (tmp != ",") & (tmp != "]")):
                 columns.append(int(tmp))
             tmp = ""
         else:
             tmp = tmp + char
-    if ((tmp!="") & (tmp!=" ") & (tmp!=",") & (tmp!="]")):
+    if ((tmp != "") & (tmp != " ") & (tmp != ",") & (tmp != "]")):
         columns.append(int(tmp))
 
     # Convert num_histbins to list for input to routines.
     if strnum_histbins == None:
-        num_histbins=None
+        num_histbins = None
     else:
         num_histbins = []
         tmp = ""
         for char in strnum_histbins:
-            if char == "[" :
+            if char == "[":
                 continue
-            if ((char==" ") | (char==",") | (char=="]")):
-                if ((tmp!="") & (tmp!=" ") & (tmp!=",") & (tmp!="]")):
+            if ((char == " ") | (char == ",") | (char == "]")):
+                if ((tmp != "") & (tmp != " ") & (tmp != ",") & (tmp != "]")):
                     num_histbins.append(int(tmp))
                 tmp = ""
             else:
                 tmp = tmp + char
-        if ((tmp!="") & (tmp!=" ") & (tmp!=",") & (tmp!="]")):
+        if ((tmp != "") & (tmp != " ") & (tmp != ",") & (tmp != "]")):
             num_histbins.append(int(tmp))
 
     # Convert range_histbins to list for input to routines.
     if strrange_histbins == None:
-        range_histbins=None
+        range_histbins = None
     else:
-        range_histbins = [[],]
-        i  = 0
+        range_histbins = [[], ]
+        i = 0
         tmp = ""
         for char in strrange_histbins:
             if char == "[":
                 if i > 0:
                     range_histbins.append([])
                 tmp = ""
-            elif (char == "]") & (tmp!=""):
+            elif (char == "]") & (tmp != ""):
                 range_histbins[i].append(float(tmp))
                 tmp = ""
                 i = i + 1
-            elif ((char==" ") | (char==",")):
-                if ((tmp!="") & (tmp!=" ") & (tmp!=",") & (tmp!="]")):
+            elif ((char == " ") | (char == ",")):
+                if ((tmp != "") & (tmp != " ") & (tmp != ",") & (tmp != "]")):
                     range_histbins[i].append(float(tmp))
                 tmp = ""
             else:
                 tmp = tmp + char
-        if ((tmp!="") & (tmp!=" ") & (tmp!=",") & (tmp!="]") & (tmp!="[")):
+        if ((tmp != "") & (tmp != " ") & (tmp != ",") & (tmp != "]") & (tmp != "[")):
             range_histbins[i].append(float(tmp))
 
     # Parse the xlabels.
@@ -486,8 +489,8 @@ if __name__ == "__main__":
                 xlabels = newlabels
             else:
                 # then the number of columns and the number of labels do not match easily
-                raise Exception("xlabels (length %d) can be either length 1 or the length of 'columns' (%d)" \
-                                %(len(xlabels), len(columns)))
+                raise Exception("xlabels (length %d) can be either length 1 or the length of 'columns' (%d)"
+                                % (len(xlabels), len(columns)))
     # Also for the titles.
     if titles != None:
         if len(titles) != len(columns):
@@ -522,9 +525,10 @@ if __name__ == "__main__":
         if do2d:
             make_2d_scatterhist(filename, columns, num_histbins, filelines, titles, xlabels, savefig)
         else:
-            make_histogram(filename, columns, num_histbins, filelines, titles, xlabels, savefig)                    
+            make_histogram(filename, columns, num_histbins, filelines, titles, xlabels, savefig)
     if use_predef:
-        make_histogram_predef(filename, columns, range_histbins, num_histbins, filelines, titles, xlabels, savefig)
+        make_histogram_predef(filename, columns, range_histbins, num_histbins,
+                              filelines, titles, xlabels, savefig)
 
     # Show the plots to the screen.
     pylab.show()

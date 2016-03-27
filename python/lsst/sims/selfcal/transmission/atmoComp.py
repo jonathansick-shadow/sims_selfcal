@@ -40,13 +40,14 @@ colors = ('b', 'm', 'r', 'g', 'y', 'k')
 
 
 class AtmoComp:
-    """Class for reading modtran component files and building an atmosphere."""    
+    """Class for reading modtran component files and building an atmosphere."""
+
     def __init__(self):
         # lists of the atmospheric components
         self.atmo_comp = ('comb', 'H2O', 'O2', 'O3', 'rayleigh', 'aerosol')
         self.atmo_ind = ('H2O', 'O2', 'O3', 'rayleigh', 'aerosol')
         # list of the airmasses we have templates for
-        self.seczlist=None
+        self.seczlist = None
         # wavelength range of templates
         self.wavelen = None
         # save the total transmission templates, mostly for the 'comb' total transmission
@@ -54,7 +55,7 @@ class AtmoComp:
         # the (absorption) templates for each component at each airmass
         self.atmo_templates = None
         # the airmass we are currently interested in
-        self.secz=-99
+        self.secz = -99
         # the atmospheric absorption templates scaled to this airmass (may be linear interpolation)
         self.atmo_abs = None
         # the atmospheric template coefficients (set to defaults)
@@ -64,16 +65,15 @@ class AtmoComp:
         # Go ahead and read the modtran files, and set up these values.
         self.readModtranFiles()
         return
-    
-    
-    def readModtranFiles(self, dataDir=None, dataRoot="Pachon_MODTRAN", dataSuffix=".7sc"):    
+
+    def readModtranFiles(self, dataDir=None, dataRoot="Pachon_MODTRAN", dataSuffix=".7sc"):
         """Read the modtran output files, keep the atmospheric components in a dictionary."""
-        # Set up the data directory. 
+        # Set up the data directory.
         if dataDir == None:
             dataDir = os.path.join(os.getenv('ATMOSPHERE_TRANSMISSION_DIR'), 'data')
         if dataDir == None:
             raise Exception('Please provide a data directory or set the ATMOSPHERE_TRANSMISSION_DIR variable.')
-        # Find the appropriate modtran transmission template files. 
+        # Find the appropriate modtran transmission template files.
         filenames = os.listdir(dataDir)
         atmofiles = []
         for f in filenames:
@@ -92,7 +92,7 @@ class AtmoComp:
             #  WAVELENGTH COMBIN    H2O   UMIX     O3  TRACE     N2    H2O MOLEC AER+CLD  HNO3 AER+CLD
             #   (NM)  TRANS  TRANS  TRANS  TRANS  TRANS   CONT   CONT   SCAT  TRANS  TRANS abTRNS
             # then continue until -9999 flag for wavelength at end of file
-            # 
+            #
             # Translation from MODTRAN to ATMO_fit:
             #   H2O = H2O TRANS * H2O CONT = water
             #   O2  = UMIX * TRACE  = molecular absorption
@@ -100,9 +100,9 @@ class AtmoComp:
             #   Rayleigh = MOLEC SCAT = molecular scattering
             #   aerosol = Use a built-in power-law model. (but could use AER+CLD trans* abTrans it looks like)
             #        (although in these sims, =1.0 all the way through)
-            # comb = combined transmission function of all components. 
-            #            
-            fin = open(os.path.join(dataDir, f), 'r')   
+            # comb = combined transmission function of all components.
+            #
+            fin = open(os.path.join(dataDir, f), 'r')
             rwavelen = []
             rtrans = {}
             for comp in self.atmo_comp:
@@ -110,13 +110,13 @@ class AtmoComp:
             i = 0
             # read data from file
             for lines in fin:
-                if i<4: # first four lines are header info
+                if i < 4:  # first four lines are header info
                     if i == 1:
                         values = lines.split()
                         secz = 1/numpy.cos((float(values[2]))*DEG2RAD)
                         secz = round(secz*10)/10.0
                     i = i+1
-                    continue # skip over header lines
+                    continue  # skip over header lines
                 values = lines.split()
                 if (float(values[0]) < 0):
                     break  # end of file marker (-9999.)
@@ -150,23 +150,23 @@ class AtmoComp:
         return
 
     def seczToString(self, secz):
-        z = float(secz)        
-        return "%.3f" %(z)
+        z = float(secz)
+        return "%.3f" % (z)
 
     def setCoefficients(self, t0=(3.9/100.0), t1=(0.02/100.0), t2=(-0.03/100.0), alpha=-1.7,
                         mol=0.96, BP=782, O3=0.9, H2O=0.9):
         """Set the atmospheric template coefficients."""
-        self.C = {'t0':t0, 't1':t1, 't2':t2, 'alpha':alpha, 'mol':mol, 'BP':BP, 'O3':O3, 'H2O':H2O}
+        self.C = {'t0': t0, 't1': t1, 't2': t2, 'alpha': alpha, 'mol': mol, 'BP': BP, 'O3': O3, 'H2O': H2O}
         # the atmospheric template coefficients (defaults)
-        #C = {'to':3.9/100.0, 't1':0.02/100.0, 't2':-0.03/100.0, 'alpha':-1.7, 
+        # C = {'to':3.9/100.0, 't1':0.02/100.0, 't2':-0.03/100.0, 'alpha':-1.7,
         #     'mol':0.96, 'BP':782, 'O3':0.9, 'H2O':0.9}
-        return 
-        
+        return
+
     def interpolateSecz(self, secz):
         """Generate atmospheric absorption profiles for this particular secz by linear interpolation."""
         if abs(secz - self.secz) < INTERPLIMIT:
             print "Already have calculated atmospheric absorption profiles for this airmass (or close enough) so will use that."
-            return        
+            return
         # else reset current values
         self.secz = secz
         self.atmo_abs = None
@@ -178,25 +178,26 @@ class AtmoComp:
             return
         # otherwise, go find closest airmasses which are in atmo_templates
         zlist = numpy.array(self.seczlist, dtype='float')
-        condition = ((zlist-secz)<=0)
+        condition = ((zlist-secz) <= 0)
         seczlo = zlist[condition].max()
         zlo = self.seczToString(seczlo)
-        condition = ((zlist-secz)>0)
+        condition = ((zlist-secz) > 0)
         seczhi = zlist[condition].min()
-        zhi = self.seczToString(seczhi)        
+        zhi = self.seczToString(seczhi)
         self.atmo_abs = {}
         ratio = (secz - seczlo) / (seczhi - seczlo)
         # and interpolate
         for comp in self.atmo_comp:
-            self.atmo_abs[comp] = (1-ratio)*self.atmo_templates[zlo][comp] + ratio*self.atmo_templates[zhi][comp]
+            self.atmo_abs[comp] = (1-ratio)*self.atmo_templates[zlo][comp] + \
+                ratio*self.atmo_templates[zhi][comp]
         # reset trans_total to None, as not calculated yet
         self.trans_total = None
-        return                      
+        return
 
     def buildAtmos(self, secz, xlim=[300, 1100], doPlot=False):
         """Generate the total atmospheric transmission profile at this airmass, using the coefficients C."""
-        # Burke paper says atmosphere put together as 
-        # Trans_total (alt/az/time) = Tgray * (e^-Z*tau_aerosol(alt/az/t)) * 
+        # Burke paper says atmosphere put together as
+        # Trans_total (alt/az/time) = Tgray * (e^-Z*tau_aerosol(alt/az/t)) *
         #         * (1 - C_mol * BP(t)/BPo * A_mol(Z))  -- line 2
         #         * (1 - sqrt(C_mol * BP(t)/BPo) * A_mol(Z))  -- 3
         #         * (1 - C_O3 * A_O3(A) )
@@ -204,61 +205,61 @@ class AtmoComp:
         # Tau_aerosol = trans['aerosol'] ... but replace with power law (because here all 1's)
         #  typical power law index is about tau ~ lambda^-1
         # A_mol = trans['O2']
-                
+
         # secz = secz of this observation
         # wavelen / atmo_templates == building blocks of atmosphere, with seczlist / atmo_ind keys
-        # C = coeffsdictionary = to, t1, t2, alpha0 (for aerosol), C_mol, BP, C_O3, C_H2O  values    
+        # C = coeffsdictionary = to, t1, t2, alpha0 (for aerosol), C_mol, BP, C_O3, C_H2O  values
         if (abs(secz - self.secz) > INTERPLIMIT):
-            print "Generating interpolated atmospheric absorption profiles for this airmass %f" %(secz)
+            print "Generating interpolated atmospheric absorption profiles for this airmass %f" % (secz)
             self.interpolateSecz(secz)
 
-        BP0 = 782 # mb
+        BP0 = 782  # mb
         # set aerosol appropriately with these coefficients
-        self.atmo_abs['aerosol'] = 1.0 - numpy.exp(-secz * (self.C['t0'] + self.C['t1']*0.0 + self.C['t2']*0.0) 
+        self.atmo_abs['aerosol'] = 1.0 - numpy.exp(-secz * (self.C['t0'] + self.C['t1']*0.0 + self.C['t2']*0.0)
                                                    * (self.wavelen/675.0)**self.C['alpha'])
         # set total transmission, with appropriate coefficients
         self.trans_total = numpy.ones(len(self.wavelen), dtype='float')
         self.trans_total = self.trans_total * (1.0 - self.C['mol'] * self.C['BP']/BP0 * self.atmo_abs['rayleigh'])  \
-                      * ( 1 - numpy.sqrt(self.C['mol'] * self.C['BP']/BP0) * self.atmo_abs['O2']) \
-                      * ( 1 - self.C['O3'] * self.atmo_abs['O3']) \
-                      * ( 1 - self.C['H2O'] * self.atmo_abs['H2O']) \
-                      * ( 1 - self.atmo_abs['aerosol'])
+            * ( 1 - numpy.sqrt(self.C['mol'] * self.C['BP']/BP0) * self.atmo_abs['O2']) \
+            * ( 1 - self.C['O3'] * self.atmo_abs['O3']) \
+            * ( 1 - self.C['H2O'] * self.atmo_abs['H2O']) \
+            * (1 - self.atmo_abs['aerosol'])
         # now we can plot the atmosphere
         if doPlot:
             pylab.figure()
             pylab.subplot(212)
             colorindex = 0
             for comp in self.atmo_ind:
-                pylab.plot(self.wavelen, self.atmo_abs[comp], colors[colorindex], label='%s' %(comp))
-                colorindex = self._next_color(colorindex)        
-            leg =pylab.legend(loc=(0.88, 0.3), fancybox=True, numpoints=1, shadow=True)
+                pylab.plot(self.wavelen, self.atmo_abs[comp], colors[colorindex], label='%s' % (comp))
+                colorindex = self._next_color(colorindex)
+            leg = pylab.legend(loc=(0.88, 0.3), fancybox=True, numpoints=1, shadow=True)
             ltext = leg.get_texts()
             pylab.setp(ltext, fontsize='small')
             coefflabel = ""
             for comp in ('mol', 't0', 'alpha', 'O3', 'H2O'):
-                coefflabel = coefflabel + "C[%s]:%.2f  " %(comp, self.C[comp])
-                if (comp=='alpha') | (comp=='mol'):
+                coefflabel = coefflabel + "C[%s]:%.2f  " % (comp, self.C[comp])
+                if (comp == 'alpha') | (comp == 'mol'):
                     coefflabel = coefflabel + "\n"
             pylab.figtext(0.2, 0.35, coefflabel, fontsize='small')
             pylab.xlim(xlim[0], xlim[1])
             pylab.ylim(0, 1.0)
             pylab.xlabel("Wavelength (nm)")
             pylab.subplot(211)
-            pylab.plot(self.wavelen, self.atmo_trans[self.seczToString(1.2)]['comb'], 'r-', label='Standard X=1.2 (no aerosols)')
+            pylab.plot(self.wavelen, self.atmo_trans[self.seczToString(1.2)][
+                       'comb'], 'r-', label='Standard X=1.2 (no aerosols)')
             pylab.plot(self.wavelen, self.trans_total, 'k-', label='Observed')
             leg = pylab.legend(loc=(0.12, 0.05), fancybox=True, numpoints=1, shadow=True)
             ltext = leg.get_texts()
             pylab.setp(ltext, fontsize='small')
             pylab.xlim(xlim[0], xlim[1])
             pylab.ylim(0, 1.0)
-            pylab.title("Example Atmosphere at X=%.2f" %(secz))
+            pylab.title("Example Atmosphere at X=%.2f" % (secz))
         return
-
 
     def plotTrans(self, secz, xlim=(300, 1100), newfig=True, savefig=False, figroot='atmos'):
         """Plot atmospheric transmission for all components."""
         if (abs(secz - self.secz) > INTERPLIMIT):
-            print "Generating interpolated atmospheric absorption profiles for this airmass %f" %(secz)
+            print "Generating interpolated atmospheric absorption profiles for this airmass %f" % (secz)
             self.interpolateSecz(secz)
         if newfig:
             pylab.figure()
@@ -274,13 +275,13 @@ class AtmoComp:
         pylab.xlim(xlim[0], xlim[1])
         pylab.xlabel("Wavelength (nm)")
         pylab.ylabel("Transmission")
-        pylab.title("Airmass %.2f" %(secz))
+        pylab.title("Airmass %.2f" % (secz))
         return
 
     def plotTemplates(self, secz, xlim=(300, 1100), newfig=True, savefig=False, figroot='atmos'):
         """Plot atmospheric absorption templates (not scaled with C) for all components."""
-        if (abs(secz - self.secz) > INTERPLIMIT):            
-            print "Generating interpolated atmospheric absorption profiles for this airmass %f" %(secz)
+        if (abs(secz - self.secz) > INTERPLIMIT):
+            print "Generating interpolated atmospheric absorption profiles for this airmass %f" % (secz)
             self.interpolateSecz(secz)
         if newfig:
             pylab.figure()
@@ -294,54 +295,54 @@ class AtmoComp:
         pylab.xlim(xlim[0], xlim[1])
         pylab.xlabel("Wavelength (nm)")
         pylab.ylabel("Template")
-        pylab.title("Airmass %.2f" %(secz))
+        pylab.title("Airmass %.2f" % (secz))
         return
-
 
     def plotAtmosRatio(self, this_seczlist, xlim=(300, 1100),
                        newfig=True, savefig=False, figroot='atmos_ratio'):
         trans_ratio = numpy.zeros(len(self.wavelen), dtype='float')
         zref = self.seczToString(this_seczlist[0])
         eps = 1e-30
-        for comp in self.atmo_comp: 
-            tmp = numpy.where(self.atm_trans[zref]==0, eps, self.atm_trans[zref])
-        pylab.figure()        
-        for z in this_seczlist:            
+        for comp in self.atmo_comp:
+            tmp = numpy.where(self.atm_trans[zref] == 0, eps, self.atm_trans[zref])
+        pylab.figure()
+        for z in this_seczlist:
             trans_ratio = self.atm_trans[self.seczToString(z)][comp] / self.atm_trans[zref][comp]
-            pylab.plot(self.wavelen, trans_ratio, label='X=%.2f' %(float(z)))
+            pylab.plot(self.wavelen, trans_ratio, label='X=%.2f' % (float(z)))
         pylab.legend(loc='lower right', fancybox=True, numpoints=1)
         pylab.xlim(xlim[0], xlim[1])
         pylab.xlabel("Wavelength (nm)")
         pylab.ylabel("Ratio")
-        pylab.title("Changes in transmission with airmass due to component %s" %(comp))
+        pylab.title("Changes in transmission with airmass due to component %s" % (comp))
         return
 
     def plotAtm(self, this_seczlist, xlim=(300, 1100),
                 newfig=True, savefig=False, figroot='atmos_piece'):
-        for comp in self.atmo_ind: 
+        for comp in self.atmo_ind:
             pylab.figure()
             for z in this_seczlist:
-                pylab.plot(self.wavelen, self.atmo_trans[z][comp], label='X=%.2f' %(float(z)))
+                pylab.plot(self.wavelen, self.atmo_trans[z][comp], label='X=%.2f' % (float(z)))
             pylab.legend(loc='lower right', fancybox=True, numpoints=1)
             pylab.xlim(xlim[0], xlim[1])
             pylab.ylim(0, 1)
             pylab.xlabel("Wavelength (nm)")
             pylab.ylabel("Transmission")
-            pylab.title("Transmission of component %s" %(comp))
-        return    
-        
+            pylab.title("Transmission of component %s" % (comp))
+        return
+
     def plotAbs(self, this_seczlist, xlim=(300, 1100),
                 newfig=True, savefig=False, figroot='atmos_template'):
-        for comp in self.atmo_ind: 
+        for comp in self.atmo_ind:
             pylab.figure()
             for z in this_seczlist:
-                pylab.plot(self.wavelen, self.atmo_templates[self.seczToString(z)][comp], label='X=%.2f' %(float(z)))
+                pylab.plot(self.wavelen, self.atmo_templates[self.seczToString(z)][
+                           comp], label='X=%.2f' % (float(z)))
             pylab.legend(loc=(0.86, 0.7), fancybox=True, numpoints=1)
             pylab.xlim(xlim[0], xlim[1])
             pylab.ylim(0, 0.62)
             pylab.xlabel("Wavelength (nm)")
             pylab.ylabel("Absorption")
-            pylab.title("Absorption due to component %s" %(comp))
+            pylab.title("Absorption due to component %s" % (comp))
         return
 
     def writeAtmo(self, filename):
@@ -349,11 +350,11 @@ class AtmoComp:
             raise Exception("No trans_total defined yet. Build an atmosphere first.")
         f = open(filename, 'w')
         print >>f, "# Test atmosphere "
-        print >>f, "# Airmass = %.3f" %(self.secz)
+        print >>f, "# Airmass = %.3f" % (self.secz)
         for coeff in self.C.keys():
-            print >>f, "# Coefficient: C['%s'] = %f" %(coeff, self.C[coeff])
+            print >>f, "# Coefficient: C['%s'] = %f" % (coeff, self.C[coeff])
         for i in range(len(self.wavelen)):
-            print >>f, "%.3f  %.8f" %(self.wavelen[i], self.trans_total[i])
+            print >>f, "%.3f  %.8f" % (self.wavelen[i], self.trans_total[i])
         f.close()
         return
 

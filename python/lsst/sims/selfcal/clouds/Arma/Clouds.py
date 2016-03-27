@@ -18,7 +18,9 @@ The structure function is not generated here - any function which is described i
 import numpy
 from pImage import PImage
 
+
 class Clouds():
+
     def __init__(self):
         return
 
@@ -51,14 +53,14 @@ class Clouds():
         self.pixscale = pixscale
         self.dpixscale = pixscale / 3600.0
         # Generate desired final image size, and adjust (if necessary) the final_fov value
-        #  so that imsize can be divisible by 2.        
+        #  so that imsize can be divisible by 2.
         self.final_imsize = (fov / self.dpixscale)
         if (self.final_imsize%2 != 0):
             self.final_imsize = self.final_imsize + 1
-        self.final_fov = self.final_imsize * self.dpixscale        
+        self.final_fov = self.final_imsize * self.dpixscale
         # Calculate, from the overall structure function, the desired standard deviation in opacity
         #  for the clouds over the entire final fov.
-        goal_rad_fov = self.final_fov / 2.0 * numpy.sqrt(2) 
+        goal_rad_fov = self.final_fov / 2.0 * numpy.sqrt(2)
         rms_goal = numpy.interp(goal_rad_fov, SFtheta, SFsf)
         # Determine size of image want to generate from SF (may want to generate an image
         #  larger than final desired fov if oversample > 1)
@@ -68,23 +70,23 @@ class Clouds():
             self.imsize = self.imsize + 1
         fov = self.imsize * self.dpixscale
         # Translate SFtheta into pixels
-        SFx = SFtheta / self.dpixscale         
+        SFx = SFtheta / self.dpixscale
         # Actually make cloud image.
         im = PImage(shift=True, nx=self.imsize, ny=self.imsize)
         im.makeImageFromSf(sfx=SFx, sf=SFsf)
         if verbose:
             print 'Image: fov', self.final_fov, 'Imsize (Final)', self.final_imsize, 'Imsize (oversampled)', self.imsize, 'Pixscale', self.dpixscale, \
                 'deg/pix', '(', self.pixscale, 'arcsec/pix)'
-        # Trim image to desired final size (in case of oversampling earlier in setupCloudImage()). 
+        # Trim image to desired final size (in case of oversampling earlier in setupCloudImage()).
         trim = round(self.imsize - self.final_imsize)/2.0
         self.cloudimage = im.imageI.real[trim:trim+self.final_imsize, trim:trim+self.final_imsize]
-        # Rescale image to have proper mean extinction and variation in cloud extinction. 
+        # Rescale image to have proper mean extinction and variation in cloud extinction.
         self.rescaleImage(rms_goal, kappa, verbose=verbose)
         if verbose:
             print 'Image: fov', self.final_fov, 'Imsize', self.final_imsize, 'Pixscale', self.dpixscale, \
                 'deg/pix', '(', self.pixscale, 'arcsec/pix)'
         return
-            
+
     def rescaleImage(self, sigma_goal, kappa, verbose=False):
         """Rescale a reconstructed image to have the desired variation and overall opacity."""
         if verbose:
@@ -94,12 +96,12 @@ class Clouds():
         self.cloudimage = self.cloudimage - self.cloudimage.mean()
         self.cloudimage *= sigma_goal / self.cloudimage.std()
         self.cloudimage += kappa
-        # Make sure no 'negative' clouds 
-        self.cloudimage = numpy.where(self.cloudimage<0, 0, self.cloudimage)
+        # Make sure no 'negative' clouds
+        self.cloudimage = numpy.where(self.cloudimage < 0, 0, self.cloudimage)
         if verbose:
             print '# After rescaling:'
             self._cloudStats()
-        return 
+        return
 
     def _cloudStats(self):
         print '# CloudImage: mean/sigma/min/max:', self.cloudimage.std(), self.cloudimage.mean(), \
@@ -119,5 +121,5 @@ class Clouds():
         im.showAcovf2d()
         im.showAcovf1d()
         im.showSf(linear=True)
-        #pylab.show()
+        # pylab.show()
         return

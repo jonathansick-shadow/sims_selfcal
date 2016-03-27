@@ -5,19 +5,21 @@ from lsst.sims.atmosphere.clouds.Arma.Clouds import Clouds
 
 # Snippet to support test timing
 import time
+
+
 def dtime(time_prev):
-   return (time.time() - time_prev, time.time())
+    return (time.time() - time_prev, time.time())
 
 
 # Instantiate cloud and arma sf objects
 cloud = Clouds()
 armasf = ArmaSf()
 
-# TIMING EVALUATED ON AN OLD MAC NOTEBOOK!! You should test this on the machines you're using, speed may likely be better. 
+# TIMING EVALUATED ON AN OLD MAC NOTEBOOK!! You should test this on the machines you're using, speed may likely be better.
 #  python version 2.7.3 and numpy v 1.7.1, scipy v 0.12.0, statsmodels v 0.4.3
 
-# play with pixscale (arcseconds/pix) to test relative timings for creating cloud images 
-# With fov = 3.0 degrees ... pixscale X -> time to generate successive cloud images 
+# play with pixscale (arcseconds/pix) to test relative timings for creating cloud images
+# With fov = 3.0 degrees ... pixscale X -> time to generate successive cloud images
 
 # pixscale = 60 "/pix (180x180 images) -> 0.1 s/visit       [for a 2 year run, with 800 visits/night avg, this is about 16.2 hours of cloud generation]
 # pixscsale = 40 "/pix (270x270 images) -> 0.13 s/visit
@@ -31,7 +33,9 @@ armasf = ArmaSf()
 # pixscale = 11 "/pix (982x982 images) -> 4.7 s/visit (??? some fov/pixscale values are just BAD)
 # pixscale = 10 "/pix (1080x1080 images) -> 0.9 s/visit
 # pixscale = 9 "/pix (1200x1200 images) -> 1.1 s/visit
-# pixscale = 8 "/pix (1350x1350 images) -> 1.4 s/visit     [for a 2 year run, with avg 800 visits/night, this is about 227 hours of cloud generation]
+# pixscale = 8 "/pix (1350x1350 images) -> 1.4 s/visit     [for a 2 year
+# run, with avg 800 visits/night, this is about 227 hours of cloud
+# generation]
 pixscale = 13.
 
 # Set up lambda_p / lambda_avg / lambda_s (lambda_s = anything, but just much smaller than lambda_*)
@@ -43,24 +47,24 @@ lambda_s = 2.
 num_clouds = 10
 c = numpy.random.uniform(low=3, high=8, size=num_clouds)
 kappa = numpy.random.normal(loc=0.5, scale=0.3, size=num_clouds)
-kappa = numpy.where(kappa<0, 0, kappa)
+kappa = numpy.where(kappa < 0, 0, kappa)
 
-# Start timer 
+# Start timer
 t = time.time()
 
 #fig1 = pylab.figure(1)
 
 for kappa, c in zip(kappa, c):
     sftheta, sfsf = armasf.CloudSf(lambda_p, lambda_avg, lambda_s, kappa, c)
-    #pylab.figure(1)
+    # pylab.figure(1)
     #pylab.plot(sftheta, sfsf, label='kappa %.2f c %.2f' %(kappa, c))
     cloud.makeCloudImage(sftheta, sfsf, kappa, fov=3.0, pixscale=pixscale, oversample=1.0)
-    #cloud.plotCloudImage()
+    # cloud.plotCloudImage()
     dt, t = dtime(t)
-    print '# To generate next cloud image: %f seconds' %(dt)
+    print '# To generate next cloud image: %f seconds' % (dt)
 
-#pylab.show()
+# pylab.show()
 
-# At each point, the cloud image itself is cloud.cloudimage and has size as below: 
+# At each point, the cloud image itself is cloud.cloudimage and has size as below:
 print '# Size of cloud images being generated:', numpy.shape(cloud.cloudimage)
 

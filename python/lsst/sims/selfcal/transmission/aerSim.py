@@ -291,7 +291,7 @@ def main(seed=10):
     master_vect, nfreq = vectorize(aerstr, amstr)
     # print master_vect
     npar = master_vect.shape[0]
-    #print 'Vector shape: %d x %d' % (npar, nfreq)
+    # print 'Vector shape: %d x %d' % (npar, nfreq)
     master_rand = np.zeros((npar, nfreq + 1), dtype='complex')
     master_out = np.zeros((npar, nfreq * 2))
     covariance_matrix = covariance(master_vect)
@@ -483,9 +483,9 @@ laer_masterdict = dict(zip(aerstr, laerlist))
 laer_wl = np.array([np.log(int(aer)) for aer in aerstr], dtype='float')
 
 # for i, arr in enumerate(aerlist):
-    # print 'Wavelength:\t{0}'.format(aerstr[i])
-    # print 'Length:\t{0}'.format(arr.shape[0])
-    # print 'Missing values:\t{0}\n'.format(arr[np.where(arr < 0.0)].shape)
+# print 'Wavelength:\t{0}'.format(aerstr[i])
+# print 'Length:\t{0}'.format(arr.shape[0])
+# print 'Missing values:\t{0}\n'.format(arr[np.where(arr < 0.0)].shape)
 
 # Apply cut on dictionaries
 dictCut(maindict, dmjd_cut)

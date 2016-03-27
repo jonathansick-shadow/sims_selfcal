@@ -52,14 +52,14 @@ def GreenwichSiderealTime(mjd):
     # Greenwich mean sidereal time (hours)
     #  (approximation according to USNO)
     Gmst = Y2K_GMST + 24.06570982441908 * delta_T
-    ## Computing nutation in longitude (dpsi)
+    # Computing nutation in longitude (dpsi)
     # longitude of ascending node(deg)
     omega = 125.04 - 0.052954 * delta_T
     # mean longitude of the Sun ( " )
     L = 280.47 + 0.98565 * delta_T
     dpsi = (- 0.000319 * numpy.sin(D2R*omega) -
             0.000024 * numpy.sin(2.*D2R*L))
-    ## correct Gmst to apparent by adding equation of
+    # correct Gmst to apparent by adding equation of
     ##  equinox (dpsi*cos(epsilon))
     # obliquity of equator (deg)
     epsilon = 23.4393 - 0.0000004 * delta_T

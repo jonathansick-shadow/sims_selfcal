@@ -27,9 +27,11 @@ def connectDB():
                                  type=calibdbtype, verbose=True)
     return conn, cursor
 
+
 def endConnectDB(conn, cursor):
     ui.sqlEndConnect(conn, cursor)
     return
+
 
 def getData(cursor, calibtable, queryrestriction=None,
             querykeys=('ra', 'decl', 'rmag'), labelkeys=None):
@@ -38,61 +40,66 @@ def getData(cursor, calibtable, queryrestriction=None,
         raise Exception("Expecting querykeys to be a tuple or list.")
     if labelkeys == None:
         labelkeys = querykeys
-    if len(labelkeys)!=len(querykeys):
+    if len(labelkeys) != len(querykeys):
         raise Exception("Querykeys and labelkeys must be the same length.")
     # Get on with things.
-    sqlquery = "select %s" %(querykeys[0])
+    sqlquery = "select %s" % (querykeys[0])
     for i in range(1, len(querykeys)):
-        sqlquery = sqlquery + ", %s" %(querykeys[i])
-    sqlquery = sqlquery + " from %s" %(calibtable)
-    if queryrestriction!=None:
-        sqlquery = sqlquery + " %s" %(queryrestriction)
+        sqlquery = sqlquery + ", %s" % (querykeys[i])
+    sqlquery = sqlquery + " from %s" % (calibtable)
+    if queryrestriction != None:
+        sqlquery = sqlquery + " %s" % (queryrestriction)
     sqlresults = ui.sqlQuery(cursor, sqlquery)
     data = ui.assignResults(sqlresults, querykeys)
     return data
+
 
 def wrapRA(ra):
     """Wrap RA into range of 0 to 360 degrees. Uses radians."""
     ra = ra % (360.0*deg2rad)
     return ra
 
+
 def capDec(dec):
     """Cap declination to -90 to 90 degrees. Does not wrap, just truncates. Uses radians."""
     dec = dec.clip(-90*deg2rad, 90*deg2rad)
     return dec
+
 
 def wrapLon(lon, lonCen):
     """Wrap longitude into -180 to 180 instead of 0 to 360. Uses radians. """
     lontemp = lon - lonCen
     lontemp = lontemp % (360.0*deg2rad)
     condition = (lontemp > (180*deg2rad))
-    lontemp[condition ] = lontemp[condition] - (360.0*deg2rad)
+    lontemp[condition] = lontemp[condition] - (360.0*deg2rad)
     return lontemp
+
 
 def hammer_project_toxy(ra, dec, raCen=0, decCen=0):
     """Calculate x/y projection of lon/lat (or RA/Dec) in a hammer projection.
     Nature of projection means that decCen always = 0.
     Input radians. Returns x/y. """
-    if (ra.shape[0]!=dec.shape[0]):
+    if (ra.shape[0] != dec.shape[0]):
         raise Exception("Expect lon and lat input to hammer_project_toxy to be same length.")
-    if decCen!=0:
+    if decCen != 0:
         print "Ignoring decCen=0; this is a hammer projection (decCen=0 automatically)."
-    rt2=n.sqrt(2.0)
+    rt2 = n.sqrt(2.0)
     # wrap longitude so lonCen is at center, and appropriately phased for cosine
     # (i.e. lon 0-360 must go to -180 to 180, with 0 at center.)
     ratemp = wrapLon(ra, raCen)
-    denom=n.sqrt(1.0+(n.cos(dec)*n.cos(ratemp/2.0)))
+    denom = n.sqrt(1.0+(n.cos(dec)*n.cos(ratemp/2.0)))
     x = (2.0*rt2*n.cos(dec)*n.sin(ratemp/2.0))/denom
     y = rt2*n.sin(dec)/denom
-    return x,y
+    return x, y
+
 
 def hammer_project_tosky(x, y, raCen=0, decCen=0):
     """Calculate sky ra/dec from hammer projection x/y coordinates.
     Nature of the projection means that decCen=0 always. Input raCen in radians. 
     Returns ra/dec. """
-    if (x.shape[0]!=y.shape[0]):
+    if (x.shape[0] != y.shape[0]):
         raise Exception("Expect x and y to hammer_project_tosky to be the same length.")
-    if decCen!=0:
+    if decCen != 0:
         print "Ignoring decCen, setting =0 as this is a hammer projection."
     z = n.sqrt(1 - (x/4.0)**2 - (y/2.0)**2)
     ra = 2 * n.arctan2(z*x, (2*(2*z**2 - 1))) + raCen
@@ -100,16 +107,18 @@ def hammer_project_tosky(x, y, raCen=0, decCen=0):
     dec = n.arcsin(z*y)
     return ra, dec
 
+
 def gnomonic_project_toxy(ra, dec, raCen, decCen):
     """Calculate x/y projection of RA1/Dec1 in system with center at RAcen, Deccen.
     Input radians. Returns x/y."""
     # also used in Global Telescope Network website
-    if (len(ra)!=len(dec)):
+    if (len(ra) != len(dec)):
         raise Exception("Expect RA and Dec arrays input to gnomonic projection to be same length.")
     cosc = n.sin(decCen) * n.sin(dec) + n.cos(decCen) * n.cos(dec) * n.cos(ra-raCen)
     x = n.cos(dec) * n.sin(ra-raCen) / cosc
     y = (n.cos(decCen)*n.sin(dec) - n.sin(decCen)*n.cos(dec)*n.cos(ra-raCen)) / cosc
     return x, y
+
 
 def gnomonic_project_tosky(x, y, raCen, decCen):
     """Calculate RA/Dec on sky of object with x/y and RA/Cen of field of view.
@@ -119,10 +128,12 @@ def gnomonic_project_tosky(x, y, raCen, decCen):
     dec = n.arctan2(n.sin(decCen) + y * n.cos(decCen), n.sqrt(x*x + denom*denom))
     return ra, dec
 
+
 def quick_hammer(stardat, raCen=0):
     stardat['x'], stardat['y'] = hammer_project_toxy(stardat['ra']*deg2rad, stardat['dec']*deg2rad,
                                                      raCen*deg2rad)
     return stardat
+
 
 def make_radec_grid(projectionmethod, raCen=0, decCen=0, rastep=20, decstep=20,
                     ralabel_dec=0, declabel_ra=0, ralabel_step=2, declabel_step=1,
@@ -135,7 +146,7 @@ def make_radec_grid(projectionmethod, raCen=0, decCen=0, rastep=20, decstep=20,
     if newfig:
         pyl.figure()
     pyl.axis('equal')
-    # Add ra lines. 
+    # Add ra lines.
     dec = n.arange(-90, 91, 1, dtype='float')
     dec = dec * deg2rad
     for r in range(0, 360, rastep):
@@ -154,21 +165,21 @@ def make_radec_grid(projectionmethod, raCen=0, decCen=0, rastep=20, decstep=20,
     # Label RA lines
     # Use xgridlim/ygridlim to remove text which will fall outside final boundaries of plot.
     raoffset = 1
-    decoffset = decstep/4.0 
+    decoffset = decstep/4.0
     ra = n.arange(0, 360, rastep*ralabel_step) + raoffset
     dec = n.zeros(len(ra), dtype='float') + decoffset + ralabel_dec
     x, y = projectionmethod(ra*deg2rad, dec*deg2rad, raCen, decCen)
     ra = ra - raoffset
     for i in range(len(ra)):
         plot_this_text = True
-        if xgridlim!=None:
-            if (x[i]>=xgridlim[1]) | (x[i]<=xgridlim[0]):
+        if xgridlim != None:
+            if (x[i] >= xgridlim[1]) | (x[i] <= xgridlim[0]):
                 plot_this_text = False
-        if ygridlim!=None:
-            if (y[i]>=ygridlim[1]) | (y[i]<=ygridlim[0]):
+        if ygridlim != None:
+            if (y[i] >= ygridlim[1]) | (y[i] <= ygridlim[0]):
                 plot_this_text = False
         if plot_this_text:
-            pyl.text(x[i], y[i], "%.0f" %(ra[i]))
+            pyl.text(x[i], y[i], "%.0f" % (ra[i]))
     # Add dec lines.
     ra = n.arange(0, 360, 1, dtype='float')
     ra = ra * deg2rad
@@ -181,7 +192,7 @@ def make_radec_grid(projectionmethod, raCen=0, decCen=0, rastep=20, decstep=20,
         condition = (x > 0)
         x1 = x[condition]
         y1 = y[condition]
-        condition = (x < -0.001 )
+        condition = (x < -0.001)
         x2 = x[condition]
         y2 = y[condition]
         pyl.plot(x1, y1, 'k:')
@@ -194,19 +205,20 @@ def make_radec_grid(projectionmethod, raCen=0, decCen=0, rastep=20, decstep=20,
     x, y = projectionmethod(ra*deg2rad, dec*deg2rad, raCen, decCen)
     dec = dec - decoffset
     for i in range(len(ra)):
-        if dec[i]!=0:
+        if dec[i] != 0:
             plot_this_text = True
-            if xgridlim!=None:
-                if (x[i]>=xgridlim[1]) | (x[i]<=xgridlim[0]):
+            if xgridlim != None:
+                if (x[i] >= xgridlim[1]) | (x[i] <= xgridlim[0]):
                     plot_this_text = False
-            if ygridlim!=None:
-                if (y[i]>=ygridlim[1]) | (y[i]<=ygridlim[0]):
+            if ygridlim != None:
+                if (y[i] >= ygridlim[1]) | (y[i] <= ygridlim[0]):
                     plot_this_text = False
             if plot_this_text:
-                pyl.text(x[i], y[i], "%.0f" %(dec[i]))
+                pyl.text(x[i], y[i], "%.0f" % (dec[i]))
     # Done.
     return
-            
+
+
 def calc_gridsize(data=None, binsize='fov', rad_fov=1.8, patches_per_side=4):
     """Calculate number of bins for pyl.hexbin plots, appropriate for either the
     full field of view (binsize=fov) or a single patch (binsize=patch).
@@ -215,11 +227,11 @@ def calc_gridsize(data=None, binsize='fov', rad_fov=1.8, patches_per_side=4):
     Returns gridsize, =[gridsizex, gridsizey]."""
     binsize_opts = ['fov', 'patch']
     if binsize not in binsize_opts:
-        raise Exception("binsize must be one of %s" %(binsize_opts))
+        raise Exception("binsize must be one of %s" % (binsize_opts))
     sqrt2 = n.sqrt(2)
-    if binsize=='fov':
+    if binsize == 'fov':
         bin_len = rad_fov*2/sqrt2
-    elif binsize=='patch':
+    elif binsize == 'patch':
         bin_len = rad_fov*2/sqrt2/patches_per_side
     if data != None:
         gridsizex = round((data['ra'].max() - data['ra'].min())/(bin_len))
@@ -257,10 +269,10 @@ def plot_density(x, y, z=None, z_method=n.mean, zlimits=None, zscale=None,
     cmap = None
     if newfig:
         pyl.figure()
-    if z!=None:
+    if z != None:
         if zlimits == None:
             hx = pyl.hexbin(x, y, C=z, reduce_C_function=z_method, gridsize=gridsize,
-                            bins=zscale, cmap=cmap)        
+                            bins=zscale, cmap=cmap)
         else:
             delta = 0.00001
             hx = pyl.hexbin(x, y, C=z, reduce_C_function=z_method, gridsize=gridsize,
@@ -276,7 +288,7 @@ def plot_density(x, y, z=None, z_method=n.mean, zlimits=None, zscale=None,
                         xgridlim=xgridlim, ygridlim=ygridlim, newfig=False)
     pyl.xlabel("x")
     pyl.ylabel("y")
-    if zlimits!=None:
+    if zlimits != None:
         dtick = (zlimits[1] - zlimits[0])/5.0
         colorticks = n.arange(zlimits[0], zlimits[1]+dtick, dtick)
         cb = pyl.colorbar(hx, orientation='horizontal', pad=.1, fraction=0.05, shrink=1, aspect=40,
@@ -286,7 +298,8 @@ def plot_density(x, y, z=None, z_method=n.mean, zlimits=None, zscale=None,
     if zscale == 'log':
         cb.set_label('log$_{10}$(N)')
     cb.set_label(cb_label)
-    return 
+    return
+
 
 def plot_contour_irregulargrid(x, y, z, nxbins=360, nybins=180):
     """Make a contour plot of irregularly gridded data."""
@@ -305,16 +318,17 @@ def plot_contour_irregulargrid(x, y, z, nxbins=360, nybins=180):
     #pyl.scatter(x, y, 'b.')
     return
 
+
 def count_number(x, y, xbinsize=None, ybinsize=None, nxbins=None, nybins=None):
     # Set up grid for contour/density plot.
     xmin = min(x)
     ymin = min(y)
-    if (xbinsize!=None) & (ybinsize!=None):
+    if (xbinsize != None) & (ybinsize != None):
         xbins = n.arange(xmin, max(x), xbinsize)
         ybins = n.arange(ymin, max(y), ybinsize)
         nxbins = xbins.shape[0]
         nybins = ybins.shape[0]
-    elif (nxbins!=None) & (nybins!=None):
+    elif (nxbins != None) & (nybins != None):
         xbinsize = (max(x) - xmin)/float(nxbins)
         ybinsize = (max(y) - ymin)/float(nybins)
         xbins = n.arange(xmin, max(x), xbinsize)
@@ -331,16 +345,17 @@ def count_number(x, y, xbinsize=None, ybinsize=None, nxbins=None, nybins=None):
     xi, yi = n.meshgrid(xbins, ybins)
     return xi, yi, counts
 
+
 def count_meanminmax(x, y, z, xbinsize=None, ybinsize=None, nxbins=None, nybins=None):
     # Set up grid for contour/density plot.
     xmin = min(x)
     ymin = min(y)
-    if (xbinsize!=None) & (ybinsize!=None):
+    if (xbinsize != None) & (ybinsize != None):
         xbins = n.arange(xmin, max(x), xbinsize)
         ybins = n.arange(ymin, max(y), ybinsize)
         nxbins = xbins.shape[0]
         nybins = ybins.shape[0]
-    elif (nxbins!=None) & (nybins!=None):
+    elif (nxbins != None) & (nybins != None):
         xbinsize = (max(x) - xmin)/float(nxbins)
         ybinsize = (max(y) - ymin)/float(nybins)
         xbins = n.arange(xmin, max(x), xbinsize)
